@@ -10,7 +10,7 @@ class Dashboard_student extends CI_Controller {
         if ($this->session->userdata('logged_student') == NULL) {
             header("Location:" . site_url('student/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
         }
-        $this->load->model(array('student/Student_model', 'bulan/Bulan_model', 'month/Month_model', 'setting/Setting_model','bebas/Bebas_model', 'information/Information_model', 'bebas/Bebas_pay_model', 'period/Period_model', 'ltrx/Log_trx_model'));
+        $this->load->model(array('student/Student_model', 'bulan/Bulan_model', 'bulan/Bulan_pay_model', 'month/Month_model', 'setting/Setting_model','bebas/Bebas_model', 'information/Information_model', 'bebas/Bebas_pay_model', 'period/Period_model', 'ltrx/Log_trx_model', 'payment/Payment_model'));
     }
 
     public function index() {
@@ -18,6 +18,7 @@ class Dashboard_student extends CI_Controller {
 
         $params['group'] = TRUE;
         $logs['limit'] = 3;
+        $logs['student_id'] = $this->session->userdata('uid_student');
         $pay['paymentt'] = TRUE;
         $pay['student_id'] = $this->session->userdata('uid_student');
 
@@ -64,7 +65,7 @@ class Dashboard_student extends CI_Controller {
             $data['total_bebas_pay'] += $row['bebas_total_pay'];
         }
 
-    // echo "<pre>".print_r($data['bulan'][0]['student_nis'], true)."<pre>";
+    // echo "<pre>".print_r($data['siswa'], true)."<pre>";
 
         $data['title'] = 'Dashboard';
         $data['main'] = 'dashboard/dashboard_student';
@@ -90,7 +91,7 @@ class Dashboard_student extends CI_Controller {
 
         $data['title'] = 'Tagihan Siswa';
         // $data['main'] = 'payout/payout_add_bulan';
-        $this->load->view('payout/payout_add_bulan', $data);
+        $this->load->view('dashboard/payout_add_bulan', $data);
     }
 
     public function payout_bebas($id = NULL, $student_id = NULL, $bebas_id = NULL, $pay_id = NULL) {
@@ -112,7 +113,7 @@ class Dashboard_student extends CI_Controller {
 
         $data['title'] = 'Tagihan Siswa';
         // $data['main'] = 'payout/payout_add_bebas';
-        $this->load->view('payout/payout_add_bebas', $data);
+        $this->load->view('dashboard/payout_add_bebas', $data);
     }
 
 }
