@@ -167,7 +167,7 @@ class Report_set extends CI_Controller {
 			$objSheet->setCellValueExplicit('B'.$cell, $row['pos_name'].' - T.A '.$row['period_start'].'/'.$row['period_end'].'-'.$row['month_name'],PHPExcel_Cell_DataType::TYPE_STRING);
 			$objSheet->setCellValueExplicit('C'.$cell, $row['student_full_name'],PHPExcel_Cell_DataType::TYPE_STRING);
 			$objSheet->setCellValueExplicit('D'.$cell, $row['class_name'],PHPExcel_Cell_DataType::TYPE_STRING);
-			$objSheet->setCellValue('E'.$cell, pretty_date($row['bulan_date_pay'], 'm/d/Y', FALSE));
+			$objSheet->setCellValue('E'.$cell, pretty_date($row['bulan_last_update'], 'm/d/Y', FALSE));
 			$objSheet->setCellValue('F'.$cell, $row['bulan_bill']);
 			$objSheet->setCellValue('G'.$cell, ' ');
 			$cell++;
@@ -237,7 +237,8 @@ class Report_set extends CI_Controller {
 		->getStartColor()
 		->setRGB('000');
 		$objXLS->getActiveSheet()->getStyle('A1')->getFont()->setBold( true );
-		$objWriter = PHPExcel_IOFactory::createWriter($objXLS, 'Excel5'); 
+		$objWriter = PHPExcel_IOFactory::createWriter($objXLS, 'Excel5');
+		ob_end_clean();
 		header('Content-Type: application/vnd.ms-excel'); 
 		header('Content-Disposition: attachment;filename="LAPORAN_KEUANGAN_'.date('dmY').'.xls"'); 
 		header('Cache-Control: max-age=0'); 
