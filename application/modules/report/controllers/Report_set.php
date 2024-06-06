@@ -100,8 +100,9 @@ class Report_set extends CI_Controller {
 		$data['bebas'] = $this->Bebas_model->get($params);
 		$data['free'] = $this->Bebas_model->get($free);
 
+		$data['monthLoop'] = count($data['py']) * 12 - 1;
+
 		$config['suffix'] = '?' . http_build_query($_GET, '', "&");
-		// echo "<pre>".print_r($data['bulan'], true)."<pre>";
 		$data['title'] = 'Rekapitulasi';
 		$data['main'] = 'report/report_bill_list';
 		$this->load->view('manage/layout', $data);
@@ -287,8 +288,8 @@ class Report_set extends CI_Controller {
 		$data['majors'] = $this->Student_model->get_majors($stu);
 		$data['student'] = $this->Bulan_model->get($stu);
 		$data['bulan'] = $this->Bulan_model->get($free);
-		$data['month'] = $this->Bulan_model->get($params);
-		$data['py'] = $this->Bulan_model->get($param);
+		$data['month'] = $this->Bulan_model->get();
+		$data['py'] = $this->Bulan_model->get(array('paymentt'=>true));
 		$data['bebas'] = $this->Bebas_model->get($params);
 		$data['free'] = $this->Bebas_model->get($free);
 
@@ -353,12 +354,41 @@ class Report_set extends CI_Controller {
 		$objSheet->getStyle('A6:C6')->applyFromArray($styleArray);
 
 		// Judul Pembayaran Bulanan
-		$objSheet->mergeCells('D5:'.getCell(count($data['month'])+3).'5');
-		foreach ($data['py'] as $row) {
-			$objSheet->setCellValue('D5', $row['pos_name'].' - T.A '.$row['period_start'].'/'.$row['period_end']); 
+		if (count($data['month']) > 12) {
+			$monthlyPayment = array();
+			$key = 0;
+			foreach ($data['month'] as $value)
+			{
+				if (!in_array($value['payment_payment_id'], $monthlyPayment)) {
+					$monthlyPayment[$key] = $value['payment_payment_id'];
+					$key++;
+				}
+			}
+			$countCell = 16;
+			$objSheet->mergeCells('D5:'.getCell(16).'5');
+			$objSheet->setCellValue('D5', $data['py'][0]['pos_name'].' - T.A '.$data['py'][0]['period_start'].'/'.$data['py'][0]['period_end']); 
 			$objXLS->getActiveSheet()->getStyle('D5')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setRGB('000');
 			$objXLS->getActiveSheet()->getStyle('D5')->applyFromArray($font);
-			$objSheet->getStyle('D5:'.getCell(count($data['month'])+3).'5')->applyFromArray($styleArray);
+			$objSheet->getStyle('D5:'.getCell(16).'5')->applyFromArray($styleArray);
+			foreach ($data['py'] as $key => $value) {
+				if ($key == 0) {
+					continue;
+				}
+				$objSheet->mergeCells(getCell($countCell+1).'5:'.getCell($countCell+11).'5');
+				$objSheet->setCellValue(getCell($countCell+1).'5', $value['pos_name'].' - T.A '.$value['period_start'].'/'.$value['period_end']); 
+				$objXLS->getActiveSheet()->getStyle(getCell($countCell+1).'5')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setRGB('000');
+				$objXLS->getActiveSheet()->getStyle(getCell($countCell+1).'5')->applyFromArray($font);
+				$objSheet->getStyle(getCell($countCell+1).'5:'.getCell($countCell+11).'5')->applyFromArray($styleArray);
+				$countCell += 12;
+			}
+		} else {
+			$objSheet->mergeCells('D5:'.getCell(count($data['month'])+3).'5');
+			foreach ($data['py'] as $row) {
+				$objSheet->setCellValue('D5', $row['pos_name'].' - T.A '.$row['period_start'].'/'.$row['period_end']); 
+				$objXLS->getActiveSheet()->getStyle('D5')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID)->getStartColor()->setRGB('000');
+				$objXLS->getActiveSheet()->getStyle('D5')->applyFromArray($font);
+				$objSheet->getStyle('D5:'.getCell(count($data['month'])+3).'5')->applyFromArray($styleArray);
+			}
 		}
 
 		$i =0;
@@ -398,7 +428,7 @@ class Report_set extends CI_Controller {
 			$alphdata = 4;
 			foreach ($data['bulan'] as $key) {
 				if ($key['student_student_id']==$row['student_student_id']) {
-					$objSheet->setCellValue(getCell($alphdata).$cell, ($key['bulan_status']==1) ? 'Lunas' : $key['bulan_bill']);
+					$objSheet->setCellValue(getCell($alphdata).$cell, ($key['bulan_bill']==$key['bulan_total_pay']) ? 'Lunas' : $key['bulan_bill']);
 					$alphdata++;
 				}
 			}
@@ -435,12 +465,13 @@ class Report_set extends CI_Controller {
 
 		$objXLS->getActiveSheet()->getColumnDimension('N')->setWidth(20);
 		$objXLS->getActiveSheet()->getStyle('A1')->getFont()->setBold( true );
-		$objWriter = PHPExcel_IOFactory::createWriter($objXLS, 'Excel5'); 
+		$objWriter = PHPExcel_IOFactory::createWriter($objXLS, 'Excel5');
+		ob_end_clean();
 		header('Content-Type: application/vnd.ms-excel'); 
 		header('Content-Disposition: attachment;filename="REKAPITULASI_'.$kelas.'_'.date('dmY').'.xls"'); 
 		header('Cache-Control: max-age=0'); 
 		$objWriter->save('php://output'); 
-		exit();      
+		exit();
 	}
 
 }

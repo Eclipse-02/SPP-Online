@@ -85,7 +85,12 @@ if ( ! function_exists('posts_url'))
 }
 
 function getCell($cell) {
-    $letters = array_combine(range(1,26), range('a', 'z'));
+    $letter_range = array();
+    $letter = 'A';
+    while ($letter !== 'BA') {
+        $letter_range[] = $letter++;
+    }
+    $letters = array_combine(range(1,52), $letter_range);
     $result = $letters[$cell]; 
     return $result;
 }

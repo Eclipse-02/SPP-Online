@@ -79,8 +79,13 @@
 								<?php endforeach ?>
 							</tr>
 							<tr>
-								<?php foreach ($bulan as $key) : ?>
-									<th><?php echo $key['month_name'] ?></th>
+								<?php foreach ($bulan as $key => $value) : ?>
+									<th><?php 
+									if ($monthLoop == $key) {
+										break;
+									} else {
+										echo $value['month_name'];
+									} ?></th>
 								<?php endforeach ?>
 							</tr>
 							
